@@ -8,17 +8,16 @@ import {
 } from "react-native";
 import * as Haptics from "../utils/haptics";
 
-export interface DetectedObject {
-  type: "obstacle" | "feature" | "door" | "stairs" | "ramp" | "person" | "vehicle";
+export interface HazardAlert {
+  type: "stairs" | "pit" | "vehicle" | "barrier" | "obstacle";
   label: string;
-  direction: "ahead" | "left" | "right" | "behind";
+  direction: "ahead" | "left" | "right";
   distance: number;
-  confidence: number;
-  priority: "critical" | "warning" | "info";
+  urgency: "critical" | "warning";
 }
 
 interface DetectionAlertProps {
-  detection: DetectedObject;
+  detection: HazardAlert;
   onComplete?: () => void;
   autoHideDelay?: number;
 }
@@ -33,29 +32,18 @@ export const DetectionAlert: React.FC<DetectionAlertProps> = ({
 
   const config = {
     critical: {
-      color: "#ef4444",
       backgroundColor: "rgba(239, 68, 68, 0.95)",
       icon: "⚠",
       vibration: "warning" as const,
-      speechRate: 0.65,
     },
     warning: {
-      color: "#fbbf24",
       backgroundColor: "rgba(251, 191, 36, 0.95)",
       icon: "⚡",
-      vibration: "caution" as const,
-      speechRate: 0.55,
-    },
-    info: {
-      color: "#60a5fa",
-      backgroundColor: "rgba(96, 165, 250, 0.95)",
-      icon: "→",
       vibration: "light" as const,
-      speechRate: 0.5,
     },
   };
 
-  const currentConfig = config[detection.priority];
+  const currentConfig = config[detection.urgency];
 
   useEffect(() => {
     Animated.parallel([
@@ -90,17 +78,10 @@ export const DetectionAlert: React.FC<DetectionAlertProps> = ({
     const distanceText = formatDistance(detection.distance);
     const directionText = formatDirection(detection.direction);
 
-    let announcement = "";
-    
-    if (detection.priority === "critical") {
-      announcement += `${detection.label} ${directionText}, ${distanceText}! `;
-    } else if (detection.priority === "warning") {
-      announcement += `${detection.label} ${directionText}, ${distanceText}. `;
-    } else {
-      announcement += `${directionText}: ${detection.label}, ${distanceText}.`;
+    if (detection.urgency === "critical") {
+      return `${detection.label} ${directionText}, ${distanceText}!`;
     }
-
-    return announcement;
+    return `${detection.label} ${directionText}, ${distanceText}.`;
   };
 
   const formatDistance = (meters: number): string => {

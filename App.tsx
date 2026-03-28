@@ -16,8 +16,12 @@ const AppContent = () => {
   const { dispatch } = useAppContext();
   const [isScanning, setIsScanning] = useState(true);
 
-  const handleDetections = useCallback((detections: any[]) => {
-    dispatch({ type: "SET_DANGERS", payload: detections.map(d => d.label) });
+  const handleHazard = useCallback((hazard: any) => {
+    if (hazard) {
+      dispatch({ type: "SET_DANGERS", payload: [`${hazard.label} ${hazard.direction}`] });
+    } else {
+      dispatch({ type: "SET_DANGERS", payload: [] });
+    }
   }, [dispatch]);
 
   const handleVoiceCommand = async (text: string) => {
@@ -48,8 +52,7 @@ const AppContent = () => {
         {hasPermission ? (
           <CameraView
             isActive={isScanning}
-            continuous={true}
-            onDetection={handleDetections}
+            onHazard={handleHazard}
           />
         ) : (
           <View style={styles.permissionContainer}>
@@ -62,7 +65,7 @@ const AppContent = () => {
             </Text>
           </View>
         )}
-        <DetectionManager maxVisible={3} alertDuration={3000} />
+        <DetectionManager alertDuration={4000} />
       </View>
       <VoiceControl
         isListening={isListening}
