@@ -1,44 +1,68 @@
-import React, { useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { SafeAreaView, StatusBar, StyleSheet, Text, View } from "react-native";
 import { CameraView } from "./src/components/CameraView";
 import { VoiceControl } from "./src/components/VoiceControl";
-import { AccessibilityBadge } from "./src/components/AccessibilityBadge";
+import { DetectionManager } from "./src/components/DetectionManager";
 import { useCameraPermission } from "./src/hooks/useCameraPermission";
 import { useVoiceRecognition } from "./src/hooks/useVoiceRecognition";
 import { AppProvider, useAppContext } from "./src/context/AppContext";
 import { processCommand } from "./src/services/navigation";
+import * as Haptics from "./src/utils/haptics";
 
 const AppContent = () => {
   const { hasPermission } = useCameraPermission();
   const { isListening, transcript, startListening, stopListening } =
     useVoiceRecognition();
-  const { state } = useAppContext();
+  const { dispatch } = useAppContext();
+  const [isScanning, setIsScanning] = useState(true);
+
+  const handleDetections = useCallback((detections: any[]) => {
+    dispatch({ type: "SET_DANGERS", payload: detections.map(d => d.label) });
+  }, [dispatch]);
 
   const handleVoiceCommand = async (text: string) => {
     await processCommand(text);
   };
 
-  useEffect(() => {
-    if (transcript && !isListening) {
-      handleVoiceCommand(transcript);
-    }
-  }, [transcript, isListening]);
+  const toggleScanning = () => {
+    setIsScanning(prev => !prev);
+    Haptics.triggerPattern(isScanning ? "light" : "success");
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a2e" />
       <View style={styles.header}>
         <Text style={styles.title}>CVision</Text>
-        <AccessibilityBadge rating={state.accessibilityRating} />
+        <View style={styles.statusContainer}>
+          <View style={[
+            styles.statusDot,
+            { backgroundColor: isScanning ? "#4ade80" : "#ef4444" }
+          ]} />
+          <Text style={styles.statusText}>
+            {isScanning ? "Scanning" : "Paused"}
+          </Text>
+        </View>
       </View>
       <View style={styles.cameraContainer}>
         {hasPermission ? (
-          <CameraView />
+          <CameraView
+            isActive={isScanning}
+            continuous={true}
+            onDetection={handleDetections}
+          />
         ) : (
-          <Text style={styles.permissionText}>
-            Camera permission required for CVision to work
-          </Text>
+          <View style={styles.permissionContainer}>
+            <Text style={styles.permissionIcon}>📷</Text>
+            <Text style={styles.permissionText}>
+              Camera permission required
+            </Text>
+            <Text style={styles.permissionSubtext}>
+              Enable camera access for CVision to scan your surroundings
+            </Text>
+          </View>
         )}
+        <DetectionManager maxVisible={3} alertDuration={3000} />
       </View>
       <VoiceControl
         isListening={isListening}
@@ -76,16 +100,44 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#e94560",
   },
+  statusContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+  statusText: {
+    color: "#a0a0a0",
+    fontSize: 14,
+  },
   cameraContainer: {
     flex: 1,
   },
-  permissionText: {
+  permissionContainer: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 40,
+  },
+  permissionIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  permissionText: {
+    color: "#e94560",
+    fontSize: 18,
+    fontWeight: "600",
     textAlign: "center",
-    textAlignVertical: "center",
-    color: "#a0a0a0",
-    fontSize: 16,
-    padding: 20,
+    marginBottom: 8,
+  },
+  permissionSubtext: {
+    color: "#6b7280",
+    fontSize: 14,
+    textAlign: "center",
   },
 });
 

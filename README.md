@@ -6,18 +6,20 @@ An assistive mobile application for visually impaired users, providing real-time
 
 ### MVP (31-hour sprint)
 
-- **Real-time Scene Description**: Uses phone camera and AI to describe surroundings
-- **Danger Detection**: Alerts users to obstacles, traffic, stairs, and hazards
-- **Voice Commands**: Full voice control interface
+- **Real-time Environmental Scanning**: Continuous camera analysis for objects and obstacles
+- **Directional Alerts**: Announces objects with direction (ahead, left, right) and distance
+- **Priority-based Warnings**: Critical hazards announced first with haptic feedback
+- **Voice Commands**: Full voice control interface with natural language
 - **Accessibility Checker**: Look up building accessibility ratings via address
 
-### Commands
+### Voice Commands
 
-- "Describe" - Analyze current surroundings
-- "Dangers" - Scan for immediate hazards
+- "Scan" - Confirm scanning is active
+- "Dangers" or "Hazards" - Focus on hazard scanning
 - "Navigate to [address]" - Check building accessibility
-- "Help" - List available commands
+- "Pause" - Pause scanning temporarily
 - "Stop" - Stop current speech
+- "Help" - List available commands
 
 ## Tech Stack
 
