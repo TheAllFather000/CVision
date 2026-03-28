@@ -152,32 +152,48 @@ export const CameraView: React.FC<CameraViewProps> = ({
   );
 };
 
-function findHazards(data: any, frameWidth: number, frameHeight: number, threshold: number): HazardAlert[] {
+function parseAllObjects(data: any, frameWidth: number, frameHeight: number): DetectedObject[] {
   if (!data.responses?.[0]?.localizedObjects) return [];
 
   const objects = data.responses[0].localizedObjects;
+  const detected: DetectedObject[] = [];
+
+  for (const obj of objects) {
+    const confidence = obj.score || 0;
+    if (confidence < 0.6) continue;
+
+    const label = obj.name || "unknown";
+    const distance = estimateDistance(obj, frameHeight);
+    const direction = estimateDirection(obj, frameWidth);
+
+    detected.push({
+      type: classifyObjectType(label),
+      label,
+      direction,
+      distance,
+      confidence,
+    });
+  }
+
+  return detected.sort((a, b) => a.distance - b.distance);
+}
+
+function findHazardsInPath(objects: DetectedObject[], threshold: number): HazardAlert[] {
   const hazards: HazardAlert[] = [];
 
   for (const obj of objects) {
-    const name = obj.name?.toLowerCase() || "";
-    const confidence = obj.score || 0;
-    
-    if (confidence < 0.65) continue;
-    
-    const isHazard = HAZARD_KEYWORDS.some(kw => name.includes(kw));
+    const isHazard = HAZARD_KEYWORDS.some(kw => obj.label.toLowerCase().includes(kw));
     if (!isHazard) continue;
 
-    const distance = estimateDistance(obj, frameHeight);
-    if (distance > threshold) continue;
+    if (obj.distance > threshold) continue;
 
-    const direction = estimateDirection(obj, frameWidth);
-    const urgency = determineUrgency(name, distance);
+    const urgency = determineUrgency(obj.label, obj.distance);
 
     hazards.push({
-      type: classifyHazard(name),
-      label: obj.name,
-      direction,
-      distance,
+      type: classifyHazardType(obj.label),
+      label: obj.label,
+      direction: obj.direction,
+      distance: obj.distance,
       urgency,
     });
   }
