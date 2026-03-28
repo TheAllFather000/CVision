@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import { StyleSheet, View, AccessibilityInfo } from "react-native";
-import { Camera, useCameraDevice, useCameraFormat, Frame } from "react-native-vision-camera";
+import { Camera, useCameraDevice, Frame } from "react-native-vision-camera";
 import * as Haptics from "../utils/haptics";
+import { API_KEYS } from "../constants/config";
 
 interface DetectedObject {
   type: "obstacle" | "feature" | "door" | "stairs" | "ramp" | "person" | "vehicle";
@@ -54,7 +55,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
       const base64Image = await frame.toBase64({ quality: 0.5 });
 
       const response = await fetch(
-        `https://vision.googleapis.com/v1/images:annotate?key=${process.env.EXPO_PUBLIC_GOOGLE_VISION_API_KEY}`,
+        `https://vision.googleapis.com/v1/images:annotate?key=${API_KEYS.GOOGLE_VISION}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -111,7 +112,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
         style={StyleSheet.absoluteFill}
         device={device}
         isActive={isActive}
-        video={continuous}
+        photo={true}
         audio={false}
         frameProcessor={continuous ? processFrame : undefined}
       />
@@ -167,7 +168,7 @@ function classifyObject(name: string): DetectedObject["type"] {
 
 function estimateDirection(raw: any): DetectedObject["direction"] {
   const bbox = raw.boundingBox || raw.boundingPoly || {};
-  const x = (bbox.minX || 0 + bbox.maxX || 0) / 2;
+  const x = ((bbox.minX || 0) + (bbox.maxX || 0)) / 2;
   const normalizedX = x / 1280;
 
   if (normalizedX < 0.33) return "left";

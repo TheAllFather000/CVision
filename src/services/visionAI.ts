@@ -1,3 +1,5 @@
+import { API_KEYS } from "../constants/config";
+
 interface SceneDescription {
   description: string;
   dangers: string[];
@@ -8,7 +10,7 @@ interface SceneDescription {
 export const analyzeFrame = async (
   imageBase64: string,
 ): Promise<SceneDescription> => {
-  const API_KEY = process.env.OPENAI_API_KEY;
+  const API_KEY = API_KEYS.OPENAI;
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -53,7 +55,7 @@ export const analyzeFrame = async (
 export const describeScreen = async (
   screenshotBase64: string,
 ): Promise<string> => {
-  const API_KEY = process.env.OPENAI_API_KEY;
+  const API_KEY = API_KEYS.OPENAI;
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",

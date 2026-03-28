@@ -1,3 +1,5 @@
+import { API_KEYS } from "../constants/config";
+
 interface AccessibilityInfo {
   wheelchairAccessible: boolean;
   accessibleEntrance: boolean;
@@ -10,7 +12,7 @@ interface AccessibilityInfo {
 export const checkAccessibility = async (
   address: string,
 ): Promise<AccessibilityInfo> => {
-  const API_KEY = process.env.GOOGLE_PLACES_API_KEY;
+  const API_KEY = API_KEYS.GOOGLE_PLACES;
 
   // First, find the place
   const searchResponse = await fetch(
