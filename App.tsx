@@ -16,11 +16,13 @@ const AppContent = () => {
   const { dispatch } = useAppContext();
   const [isScanning, setIsScanning] = useState(true);
 
+  const handleScan = useCallback((objects: any[]) => {
+    dispatch({ type: "SET_DANGERS", payload: objects.map(o => o.label) });
+  }, [dispatch]);
+
   const handleHazard = useCallback((hazard: any) => {
     if (hazard) {
-      dispatch({ type: "SET_DANGERS", payload: [`${hazard.label} ${hazard.direction}`] });
-    } else {
-      dispatch({ type: "SET_DANGERS", payload: [] });
+      dispatch({ type: "SET_DANGERS", payload: [`⚠ ${hazard.label} ${hazard.direction}`] });
     }
   }, [dispatch]);
 

@@ -4,6 +4,14 @@ import { Camera, useCameraDevice, Frame } from "react-native-vision-camera";
 import * as Haptics from "../utils/haptics";
 import { API_KEYS } from "../constants/config";
 
+interface DetectedObject {
+  type: string;
+  label: string;
+  direction: "ahead" | "left" | "right";
+  distance: number;
+  confidence: number;
+}
+
 interface HazardAlert {
   type: "stairs" | "pit" | "vehicle" | "barrier" | "obstacle";
   label: string;
@@ -13,6 +21,7 @@ interface HazardAlert {
 }
 
 interface CameraViewProps {
+  onScan?: (objects: DetectedObject[]) => void;
   onHazard?: (hazard: HazardAlert | null) => void;
   isActive?: boolean;
   proximityThreshold?: number;
@@ -30,6 +39,7 @@ const HAZARD_KEYWORDS = [
 const PROXIMITY_THRESHOLD_DEFAULT = 3;
 
 export const CameraView: React.FC<CameraViewProps> = ({
+  onScan,
   onHazard,
   isActive = true,
   proximityThreshold = PROXIMITY_THRESHOLD_DEFAULT,
@@ -41,7 +51,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
   const lastAnnouncedHazard = useRef<string>("");
 
   const processFrame = useCallback(async (frame: Frame) => {
-    if (isProcessing.current || !onHazard) return;
+    if (isProcessing.current) return;
     
     const now = Date.now();
     if (now - lastProcessTime.current < 800) return;
@@ -65,7 +75,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
             requests: [{
               image: { content: base64Image },
               features: [
-                { type: "OBJECT_LOCALIZATION", maxResults: 15 },
+                { type: "OBJECT_LOCALIZATION", maxResults: 20 },
               ],
             }],
           }),
@@ -78,7 +88,11 @@ export const CameraView: React.FC<CameraViewProps> = ({
       }
 
       const data = await response.json();
-      const hazards = findHazards(data, width, height, proximityThreshold);
+      const allObjects = parseAllObjects(data, width, height);
+      
+      onScan?.(allObjects);
+
+      const hazards = findHazardsInPath(allObjects, proximityThreshold);
       
       if (hazards.length > 0) {
         const nearest = hazards[0];
@@ -92,10 +106,10 @@ export const CameraView: React.FC<CameraViewProps> = ({
           AccessibilityInfo.announceForAccessibilityWithOptions?.(announcement, { queue: false });
         }
         
-        onHazard(nearest);
+        onHazard?.(nearest);
       } else {
         lastAnnouncedHazard.current = "";
-        onHazard(null);
+        onHazard?.(null);
       }
     } catch (error: any) {
       if (error.name !== "AbortError") {
@@ -104,7 +118,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
     } finally {
       isProcessing.current = false;
     }
-  }, [onHazard, proximityThreshold]);
+  }, [onScan, onHazard, proximityThreshold]);
 
   useEffect(() => {
     lastProcessTime.current = 0;
