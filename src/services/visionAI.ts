@@ -1,92 +1,133 @@
 import { API_KEYS } from "../constants/config";
 
-interface SceneDescription {
+export interface SceneDescription {
   description: string;
   dangers: string[];
   objects: string[];
   navigation: string[];
 }
 
-export const analyzeFrame = async (
+export interface AIServiceError {
+  type: "api_error" | "parse_error" | "network_error";
+  message: string;
+}
+
+export const analyzeScene = async (
   imageBase64: string,
-): Promise<SceneDescription> => {
-  const API_KEY = API_KEYS.OPENAI;
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4-vision-preview",
-      messages: [
-        {
-          role: "system",
-          content: `You are CVision, an AI assistant for visually impaired users. Analyze the image and respond in JSON format:
+): Promise<SceneDescription | AIServiceError> => {
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${API_KEYS.OPENAI}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [
           {
-            "description": "Brief description of the scene (1-2 sentences)",
-            "dangers": ["List any potential dangers like obstacles, traffic, stairs, etc."],
-            "objects": ["Key objects like doors, chairs, people"],
-            "navigation": ["Navigation hints like 'door ahead', 'stairs to left', etc."]
-          }
-          Be concise and prioritize safety information.`,
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/jpeg;base64,${imageBase64}`,
+            role: "system",
+            content: `You are CVision, an AI assistant for visually impaired users. Analyze the image and respond ONLY with valid JSON in this exact format:
+{
+  "description": "Brief description of what you see (1-2 sentences)",
+  "dangers": ["any immediate dangers", "like stairs", "potholes", "traffic"],
+  "objects": ["key objects nearby", "like doors", "benches", "people"],
+  "navigation": ["useful navigation hints", "like clear path ahead", "exit to the right"]
+}
+Prioritize safety. If nothing dangerous, say "Path looks clear".`,
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${imageBase64}`,
+                },
               },
-            },
-          ],
-        },
-      ],
-      max_tokens: 300,
-    }),
-  });
+            ],
+          },
+        ],
+        max_tokens: 400,
+      }),
+    });
 
-  const data = await response.json();
-  return JSON.parse(data.choices[0].message.content);
+    if (!response.ok) {
+      return {
+        type: "api_error",
+        message: `OpenAI API error: ${response.status}`,
+      };
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+
+    if (!content) {
+      return { type: "parse_error", message: "Empty response from AI" };
+    }
+
+    const cleaned = content.replace(/```json\n?|```\n?/g, "").trim();
+    return JSON.parse(cleaned) as SceneDescription;
+  } catch (error: any) {
+    return {
+      type: "network_error",
+      message: error.message || "Network error",
+    };
+  }
 };
 
-export const describeScreen = async (
-  screenshotBase64: string,
-): Promise<string> => {
-  const API_KEY = API_KEYS.OPENAI;
+export const describeEnvironment = async (
+  imageBase64: string,
+): Promise<string | AIServiceError> => {
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${API_KEYS.OPENAI}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: `You are CVision, a voice assistant for visually impaired users. Describe the scene in natural, conversational language as if you're guiding them. Focus on:
+- What's directly ahead
+- What to watch out for
+- Where exits or paths are
+- Anything unusual or noteworthy
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4-vision-preview",
-      messages: [
-        {
-          role: "system",
-          content:
-            "Describe this phone screen for a visually impaired user. Focus on text content, buttons, and interactive elements.",
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/jpeg;base64,${screenshotBase64}`,
+Keep it under 3 sentences. Be warm and helpful.`,
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${imageBase64}`,
+                },
               },
-            },
-          ],
-        },
-      ],
-      max_tokens: 200,
-    }),
-  });
+            ],
+          },
+        ],
+        max_tokens: 150,
+      }),
+    });
 
-  const data = await response.json();
-  return data.choices[0].message.content;
+    if (!response.ok) {
+      return {
+        type: "api_error",
+        message: `OpenAI API error: ${response.status}`,
+      };
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || "I couldn't analyze the scene.";
+  } catch (error: any) {
+    return {
+      type: "network_error",
+      message: error.message || "Network error",
+    };
+  }
 };
