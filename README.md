@@ -16,7 +16,57 @@ Built for the **Isazi Consulting Accessibility Hackathon**.
 All features work completely hands-free using voice commands.
 
 ---
+## Build from Source (For Developers)
 
+### Required Software
+
+1. **Node.js** (v18 or higher)
+
+   - Download: https://nodejs.org
+
+2. **Java 17 JDK**
+
+   - Linux: `sudo apt install openjdk-17-jdk`
+   - Mac: `brew install openjdk@17`
+   - Windows: Download from https://adoptium.net
+
+3. **Android SDK**
+   - Download Android Studio: https://developer.android.com/studio
+   - Or just the command-line tools
+
+### Build Commands
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Set Java environment
+# Linux:
+export JAVA_HOME=/opt/jdk-17
+export PATH=$JAVA_HOME/bin:$PATH
+
+# 3. Set Android SDK (if needed)
+export ANDROID_HOME=$HOME/Android/Sdk
+
+# 4. Build the APK
+cd android
+./gradlew assembleRelease
+
+# 5. APK will be at:
+# android/app/build/outputs/apk/release/app-release.apk
+```
+
+### Running with Metro (Development)
+
+```bash
+# Start Metro bundler
+npx react-native start --port 8083
+
+# In another terminal, install APK
+adb install android/app/build/outputs/apk/release/app-release.apk
+```
+
+---
 ## Install APK (For Users)
 
 ### Step 1: Enable Unknown Sources
@@ -105,57 +155,6 @@ When you first open the app, grant these permissions when asked:
 
 ---
 
-## Build from Source (For Developers)
-
-### Required Software
-
-1. **Node.js** (v18 or higher)
-
-   - Download: https://nodejs.org
-
-2. **Java 17 JDK**
-
-   - Linux: `sudo apt install openjdk-17-jdk`
-   - Mac: `brew install openjdk@17`
-   - Windows: Download from https://adoptium.net
-
-3. **Android SDK**
-   - Download Android Studio: https://developer.android.com/studio
-   - Or just the command-line tools
-
-### Build Commands
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Set Java environment
-# Linux:
-export JAVA_HOME=/opt/jdk-17
-export PATH=$JAVA_HOME/bin:$PATH
-
-# 3. Set Android SDK (if needed)
-export ANDROID_HOME=$HOME/Android/Sdk
-
-# 4. Build the APK
-cd android
-./gradlew assembleRelease
-
-# 5. APK will be at:
-# android/app/build/outputs/apk/release/app-release.apk
-```
-
-### Running with Metro (Development)
-
-```bash
-# Start Metro bundler
-npx react-native start --port 8083
-
-# In another terminal, install APK
-adb install android/app/build/outputs/apk/release/app-release.apk
-```
-
----
 
 ## Tech Stack
 
