@@ -1,6 +1,7 @@
 import { speak, stop as stopSpeaking } from "./tts";
 import { checkAccessibility, formatAccessibilityReport } from "./accessibility";
 import { describeEnvironment } from "./visionAI";
+import { whisperService, parseVoiceCommand } from "./whisper";
 
 type CommandHandler = (args: string) => Promise<void>;
 
@@ -53,59 +54,40 @@ const commands: Record<string, CommandHandler> = {
 };
 
 export const processCommand = async (transcript: string): Promise<{ needsAnalysis: boolean; type?: "full" | "quick" }> => {
-  const lower = transcript.toLowerCase().trim();
+  const enhanced = await whisperService.enhanceTranscription(transcript);
+  const parsed = parseVoiceCommand(enhanced);
 
-  if (lower.includes("stop") || lower.includes("shut up")) {
-    stopSpeaking();
-    return { needsAnalysis: false };
-  }
+  switch (parsed.action) {
+    case "stop":
+      stopSpeaking();
+      return { needsAnalysis: false };
 
-  if (lower.includes("pause") || lower.includes("hold on") || lower.includes("wait")) {
-    await commands.pause("");
-    return { needsAnalysis: false };
-  }
+    case "pause":
+      await commands.pause("");
+      return { needsAnalysis: false };
 
-  if (lower.includes("resume") || lower.includes("continue") || lower.includes("start")) {
-    await commands.resume("");
-    return { needsAnalysis: false };
-  }
+    case "resume":
+      await commands.resume("");
+      return { needsAnalysis: false };
 
-  if (lower.includes("navigate to") || lower.includes("go to") || lower.includes("find")) {
-    const address = lower.replace(/navigate to|go to|find/gi, "").trim();
-    await commands.navigate(address);
-    return { needsAnalysis: false };
-  }
+    case "navigate":
+      await commands.navigate(parsed.params || "");
+      return { needsAnalysis: false };
 
-  if (lower.includes("help") || lower.includes("commands") || lower.includes("what can you do")) {
-    await commands.help("");
-    return { needsAnalysis: false };
-  }
+    case "help":
+      await commands.help("");
+      return { needsAnalysis: false };
 
-  if (lower.includes("dangers") || lower.includes("hazards") || lower.includes("obstacles")) {
-    await commands.dangers("");
-    return { needsAnalysis: false };
-  }
+    case "describe":
+      return { needsAnalysis: true, type: "full" };
 
-  if (
-    lower.includes("describe") || 
-    lower.includes("around me") || 
-    lower.includes("what's around") ||
-    lower.includes("whats around") ||
-    lower.includes("around") ||
-    lower.includes("surroundings")
-  ) {
-    if (lower.includes("quick") || lower.includes("brief") || lower.includes("summary")) {
+    case "scan":
       return { needsAnalysis: true, type: "quick" };
-    }
-    return { needsAnalysis: true, type: "full" };
-  }
 
-  if (lower.includes("quick") || lower.includes("scan") || lower.includes("look")) {
-    return { needsAnalysis: true, type: "quick" };
+    default:
+      speak("I didn't understand that. Say 'help' for available commands.", "normal");
+      return { needsAnalysis: false };
   }
-
-  speak("I didn't understand that. Say 'help' for available commands.", "normal");
-  return { needsAnalysis: false };
 };
 
 export const speakAnalysisResult = async (imageBase64: string): Promise<void> => {
