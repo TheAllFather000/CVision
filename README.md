@@ -1,22 +1,70 @@
-CVision - Voice Navigation for Blind Users
+# CVision – Voice Navigation for Blind Users
 
-CVision is a voice-controlled mobile app designed for blind and visually impaired users. It provides hands-free navigation and environmental awareness through the phone's camera and GPS.
+**CVision** is a voice-controlled mobile application designed for blind and visually impaired users. It enables hands-free navigation and real-time environmental awareness using the phone’s camera and GPS.
 
-What It Does
+---
 
-Voice Navigation - Say "navigate to [destination]" and get turn-by-turn walking directions with blind-friendly instructions (no compass directions like "head north")
-Scene Description - Say "describe my surroundings" and the camera automatically captures what it sees, then speaks out loud what objects are detected (chairs, doors, cars, etc.)
-Hazard Detection - Get audio warnings for obstacles like poles, stairs, curbs, and vehicles
-Location Awareness - Instantly hear your current location with "where am I"
-Key Features
+## Overview
 
-100% Voice-First - Minimal visual UI, everything works through speech
-Triple-Tap Wake - Tap anywhere 3 times to wake the app
-Vibration Feedback - Phone vibrates to indicate turn directions during navigation
-Auto-Camera Capture - 5-second countdown then automatically takes photo (no button press needed)
-Free APIs - Uses OpenStreetMap, OpenRouteService, and on-device ML Kit - no paid services
-Tech Stack
+CVision focuses on accessibility through a fully voice-driven experience, allowing users to navigate and understand their surroundings without relying on visual interfaces.
 
-React Native + TypeScript + Kotlin (Android Native) + ML Kit + OpenStreetMap
+---
 
-Built for the Isazi Consulting Accessibility Hackathon.
+## Features
+
+### Voice Navigation
+Say: `navigate to [destination]`  
+- Provides turn-by-turn walking directions  
+- Uses blind-friendly instructions (no compass-based directions like "head north")
+
+### Scene Description
+Say: `describe my surroundings`  
+- Automatically captures an image using the camera  
+- Detects and announces objects such as chairs, doors, and vehicles  
+
+### Hazard Detection
+- Provides audio warnings for nearby obstacles  
+- Detects hazards such as poles, stairs, curbs, and vehicles  
+
+### Location Awareness
+Say: `where am I`  
+- Instantly announces the user’s current location  
+
+---
+
+## Key Capabilities
+
+- **Voice-First Design**  
+  Minimal visual interface; all core functionality is speech-driven  
+
+- **Triple-Tap Wake**  
+  Tap anywhere three times to activate the app  
+
+- **Vibration Feedback**  
+  Haptic feedback indicates turn directions during navigation  
+
+- **Auto Camera Capture**  
+  5-second countdown before automatically capturing an image (no button interaction required)  
+
+- **Free and Open APIs**  
+  Built using:
+  - OpenStreetMap  
+  - OpenRouteService  
+  - On-device ML Kit  
+  No paid services required  
+
+---
+
+## Tech Stack
+
+- React Native  
+- TypeScript  
+- Kotlin (Android Native)  
+- ML Kit  
+- OpenStreetMap  
+
+---
+
+## Built For
+
+Developed for the **Isazi Consulting Accessibility Hackathon**.
