@@ -17,16 +17,41 @@ All features work completely hands-free using voice commands.
 
 ---
 
-**Download and use the app in 2 minutes.**
+## Install APK (For Users)
 
----
+### Step 1: Enable Unknown Sources
 
-## Install APK
+Before installing, you need to allow apps from unknown sources:
 
-1. **Download** the APK from: `android/app/build/outputs/apk/release/app-release.apk`
-2. **Transfer** it to your phone
-3. **Open** the APK file to install
-4. **Grant** permissions when asked (microphone, camera, location)
+- Go to **Settings** → **Apps** → **Special access** → **Install unknown apps**
+- Find your **File Manager** (or Browser) and enable "Allow from this source"
+
+### Step 2: Get the APK
+
+1. Download `app-release.apk` from this repository
+2. Transfer the file to your phone (via USB, Google Drive, email, etc.)
+
+### Step 3: Install
+
+1. Open your **File Manager** app
+2. Find and tap the `app-release.apk` file
+3. Tap **Install** (or **Install anyway** if warned)
+4. Wait for installation to complete
+5. Tap **Open** to launch the app
+
+### Step 4: Grant Permissions
+
+When you first open the app, grant these permissions when asked:
+
+- **Microphone** - Required for voice commands
+- **Camera** - Required for describing surroundings
+- **Location** - Required for navigation
+
+### Step 5: Start Using
+
+1. Open the **CVision** app
+2. **Triple-tap** anywhere on the screen to wake it
+3. Say **"Help"** to hear all available commands
 
 ---
 
@@ -58,34 +83,89 @@ All features work completely hands-free using voice commands.
 
 **App doesn't hear me?**
 
-- Grant microphone and location permission
+- Grant microphone and location permission in settings
 - Triple-tap to wake first
+- Make sure no other app is using the microphone
 
 **Camera not working?**
 
-- Grant camera permission in settings
+- Grant camera permission in phone settings
 - Use in good lighting
+- Try closing and reopening the app
 
 **"Command not recognized"?**
 
-- Speak clearly, close to phone
+- Speak clearly, close to the phone
 - Say "help" to confirm it's listening
+
+**APK won't install?**
+
+- Make sure "Install unknown apps" is enabled for your file manager
+- Uninstall previous version first from phone settings
 
 ---
 
-## Build from Source (Developers)
+## Build from Source (For Developers)
+
+### Required Software
+
+1. **Node.js** (v18 or higher)
+
+   - Download: https://nodejs.org
+
+2. **Java 17 JDK**
+
+   - Linux: `sudo apt install openjdk-17-jdk`
+   - Mac: `brew install openjdk@17`
+   - Windows: Download from https://adoptium.net
+
+3. **Android SDK**
+   - Download Android Studio: https://developer.android.com/studio
+   - Or just the command-line tools
+
+### Build Commands
 
 ```bash
+# 1. Install dependencies
 npm install
+
+# 2. Set Java environment
+# Linux:
 export JAVA_HOME=/opt/jdk-17
 export PATH=$JAVA_HOME/bin:$PATH
-cd android && ./gradlew assembleRelease
+
+# 3. Set Android SDK (if needed)
+export ANDROID_HOME=$HOME/Android/Sdk
+
+# 4. Build the APK
+cd android
+./gradlew assembleRelease
+
+# 5. APK will be at:
+# android/app/build/outputs/apk/release/app-release.apk
+```
+
+### Running with Metro (Development)
+
+```bash
+# Start Metro bundler
+npx react-native start --port 8083
+
+# In another terminal, install APK
+adb install android/app/build/outputs/apk/release/app-release.apk
 ```
 
 ---
 
 ## Tech Stack
 
-React Native + Kotlin (Android) + ML Kit + OpenRouteService
+- **Framework**: React Native 0.73.4
+- **Language**: TypeScript + Kotlin
+- **Speech**: Android SpeechRecognizer
+- **TTS**: Android TextToSpeech
+- **Camera**: CameraX + ML Kit
+- **Maps**: OpenStreetMap + OpenRouteService
+
+---
 
 MIT License
