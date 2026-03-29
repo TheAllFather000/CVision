@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  <!-- Background circle -->
+  <path
+      android:fillColor="#2563EB"
+      android:pathData="M54,54m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0"/>
+  <!-- Eye shape -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M54,35c-15,0 -27,10 -30,20c3,10 15,20 30,20s27,-10 30,-20c-3,-10 -15,-20 -30,-20zM54,68c-7,0 -12,-4 -12,-8s5,-8 12,-8s12,4 12,8s-5,8 -12,8z"/>
+  <!-- Pupil -->
+  <path
+      android:fillColor="#2563EB"
+      android:pathData="M54,52c-4,0 -8,4 -8,8s4,8 8,8s8,-4 8,-8s-4,-8 -8,-8z"/>
+</vector>
